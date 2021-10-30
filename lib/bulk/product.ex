@@ -13,6 +13,22 @@ defmodule Bulk.Product do
     timestamps()
   end
 
+  def update_sales_price(%{name: name, increase: increase}) do
+    generate_query(name)
+    |> update([],
+      set: [price: fragment("price + (price * ?)", ^increase)]
+    )
+    |> Repo.update_all([])
+  end
+
+  def update_sales_price(%{product_ids: product_ids, increase: increase}) do
+    generate_query(product_ids)
+    |> update([],
+      set: [price: fragment("price + (price * ?)", ^increase)]
+    )
+    |> Repo.update_all([])
+  end
+
   def all_products(%{name: name}) do
     generate_query(name)
     |> Repo.all()
