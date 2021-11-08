@@ -14,8 +14,9 @@ defmodule Bulk.Product do
   end
 
   def update_sales_price(%{name: name, increase: increase}) do
-    from(p in Product, join: d in assoc(p, :detail))
-    |> where([_p, d], ilike(d.name, ^"%#{name}%"))
+    from(p in Product, as: :product)
+    |> join(:inner, [product: p], info in assoc(p, :detail), as: :detail)
+    |> where([detail: d], ilike(d.name, ^"%#{name}%"))
     |> update([],
       set: [price: fragment("price + (price * ?)", ^increase)]
     )
@@ -23,13 +24,32 @@ defmodule Bulk.Product do
   end
 
   def update_sales_price(%{product_ids: product_ids, increase: increase}) do
-    from(p in Product, join: d in assoc(p, :detail))
-    |> where([p, _d], p.id in ^product_ids)
+    from(p in Product, as: :product)
+    |> join(:inner, [product: p], info in assoc(p, :detail), as: :detail)
+    |> where([product: p], p.id in ^product_ids)
     |> update([],
       set: [price: fragment("price + (price * ?)", ^increase)]
     )
     |> Repo.update_all([])
   end
+
+  # def update_sales_price(%{name: name, increase: increase}) do
+  #   from(p in Product, join: d in assoc(p, :detail))
+  #   |> where([_p, d], ilike(d.name, ^"%#{name}%"))
+  #   |> update([],
+  #     set: [price: fragment("price + (price * ?)", ^increase)]
+  #   )
+  #   |> Repo.update_all([])
+  # end
+
+  # def update_sales_price(%{product_ids: product_ids, increase: increase}) do
+  #   from(p in Product, join: d in assoc(p, :detail))
+  #   |> where([p, _d], p.id in ^product_ids)
+  #   |> update([],
+  #     set: [price: fragment("price + (price * ?)", ^increase)]
+  #   )
+  #   |> Repo.update_all([])
+  # end
 
   # def update_sales_price(%{name: name, increase: increase}) do
   #   generate_query(name)
