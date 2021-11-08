@@ -25,7 +25,6 @@ defmodule Bulk.Product do
 
   def update_sales_price(%{product_ids: product_ids, increase: increase}) do
     from(p in Product, as: :product)
-    |> join(:inner, [product: p], info in assoc(p, :detail), as: :detail)
     |> where([product: p], p.id in ^product_ids)
     |> update([],
       set: [price: fragment("price + (price * ?)", ^increase)]
